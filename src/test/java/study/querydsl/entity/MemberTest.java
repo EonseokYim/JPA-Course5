@@ -1,6 +1,7 @@
 package study.querydsl.entity;
 
 import jakarta.persistence.EntityManager;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,4 +49,7 @@ class MemberTest {
         } //스터디이기 때문에 눈으로 보이는게 필요함.ㅎㅎ 원래 테스트 짤 때는 systemout을 사용하면 안되고 assertThat으로 다 자동화된 검증을 해야한다.
 
     }
+
+
+
 }
