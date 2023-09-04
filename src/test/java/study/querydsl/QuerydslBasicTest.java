@@ -20,6 +20,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static study.querydsl.entity.QMember.*;
+import static study.querydsl.entity.QMember.member;
 import static study.querydsl.entity.QTeam.team;
 
 @SpringBootTest
@@ -67,11 +68,29 @@ public class QuerydslBasicTest {
         assertThat(findMember.getUsername()).isEqualTo("member1");
     }
 
-    //member1 조회 - QueryDSL
     @Test
-    public void startQuerydsl() {
+    public void startQuerydsl1() {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        QMember member = new QMember("m");
+
         Member findMember = queryFactory
-                .select(member) //QMember.member static import
+                .select(member)
+                .from(member)
+                .where(member.username.eq("member1")) //파라미터 바인딩 처리
+                .fetchOne();
+
+        assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+    //member1 조회 - QueryDSL (코드 간결화 후)
+    @Test
+    public void startQuerydsl2() {
+        //JPAQueryFactory를 클래스의 variable로 선언하여 요약할 수 있다.
+        //QMember 객체 내부에 member라는 스테틱 메소드를 제공해준다. 이를 static import하여 코드를 간결화할 수 있다.
+        //아래와 같이 바로 queryFactory메소드만 사용하여 코드가 깔끔해진다.
+
+        Member findMember = queryFactory
+                .select(member)
                 .from(member)
                 .where(member.username.eq("member1")) //파라미터 바인딩 처리
                 .fetchOne();
@@ -185,9 +204,9 @@ public class QuerydslBasicTest {
                         member.age.avg(),
                         member.age.max(),
                         member.age.min()
-                )
+                ) //select 절에 Qmember가 아닌 직접 입력하면 querydsl의 튜플 타입으로 반환한다.
                 .from(member)
-                .fetch(); //select 절에 Qmember가 아닌 직접 입력하면 querydsl의 튜플 타입으로 반환한다.
+                .fetch();
 
         Tuple tuple = result.get(0);
         assertThat(tuple.get(member.count())).isEqualTo(4);
@@ -262,4 +281,47 @@ public class QuerydslBasicTest {
                 .extracting("username")
                 .containsExactly("teamA", "teamB");
     }
+
+    /**
+     * 회원과 팀을 조인하면서, 팀 이름이 teamA인 팀만 조인, 회원은 모두 조회
+     */
+    @Test
+    public void join_on_filtering() throws Exception {
+        List<Tuple> result = queryFactory
+                .select(member, team)
+                .from(member)
+                .leftJoin(member.team, team).on(team.name.eq("teamA")) //member.team과 team을 조인하는데 team이름이 "teamA"인 것만 가져와 조인. //leftjoin에서만 on절을 사용하고. 그냥 join일 경우에는 on에 작성하나 where에 작성하나 똑같기 때문에 where에 쓰는게 보기 좋음.
+                .fetch();
+
+        for (Tuple tuple : result) {
+            System.out.println("tuple = " + tuple);
+        }
+    }
+
+
+    /**
+     * 연관관계가 없는 엔터티 외부 조인
+     * 회원의 이름이 팀 이름과 같은 대상 외부 조인
+     */
+    @Test
+    public void join_on_no_relation() throws Exception {
+        em.persist(new Member("teamA"));
+        em.persist(new Member("teamB"));
+        em.persist(new Member("teamC"));
+
+
+        List<Tuple> result = queryFactory
+                .select(member, team)
+                .from(member)
+                .leftJoin(team).on(member.username.eq(team.name)) //ON절은 조인한 대상을 줄이는 필터링 역할.
+                //leftjoin을 join으로 바꾸면?
+                .fetch();
+
+        for (Tuple tuple : result) {
+            //soutv
+            System.out.println("tuple = " + tuple);
+            
+        }
+    }
+
 }
