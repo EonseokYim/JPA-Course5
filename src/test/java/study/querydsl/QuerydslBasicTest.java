@@ -2,6 +2,8 @@ package study.querydsl;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -17,6 +19,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import study.querydsl.dto.MemberDto;
+import study.querydsl.dto.UserDto;
 import study.querydsl.entity.Member;
 import study.querydsl.entity.QMember;
 import study.querydsl.entity.QTeam;
@@ -617,6 +621,141 @@ public class QuerydslBasicTest {
      * Tuple은 QueryDSL 라이브러리 안에 속해있는 타입이다. 웬만하면 이러한 튜플타입은 repository 레이어에서만 쓰고, 서비스나 컨트롤러 영역에서 데이터가 필요하다면 dto로 반환해서 사용하길 권장한다.
      * 그래야 나중에 QueryDSL이 아닌 새로운 기술이 나오더라도 controller, service 계층은 그대로 두고 repository만 수정하면 된다. 스프링이  보통 이런식으로 설계하라고 유도함.
      */
+
+    /**
+     * 프로젝션 결과 반환 - DTO 조회 By 순수JPA
+     */
+    @Test
+    public void findDtoByJPQL() {
+        //new operation을 활용한 DTO 프로젝션
+        //이전에 배웠던 JPQL로 dto로 조회한다면 아래와 같이 MemberDTO()의 생성자를 통해서 결과를 프로젝션해줌.
+        List<MemberDto> result = em.createQuery("select new study.querydsl.dto.MemberDto(m.username, m.age) from Member m", MemberDto.class)
+                .getResultList();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    /**
+     * 순수JPA의 new operation을 활용한 DTO 프로젝션의 단점
+     *
+     * 순수 JPA에서 DTO를 조회할 때는 new 명령어를 사용해야함
+     * DTO의 package 이름을 다 적어줘야해서 지저분함
+     * 생성자 방식만 지원함
+     */
+
+
+    /**
+     * 그런데..!! QueryDSL은 이 방법을 다 극복하고 정말 깔끔한 방법을 제공함 !!!
+     *
+     * 결과를 DTO 반환할 때 사용
+     * 다음 3가지 방법 지원
+     * 1. 프로퍼티 접근
+     * 2. 필드 직접 접근
+     * 3. 생성자 사용
+     */
+
+    // 1. 프로퍼티 접근
+    @Test
+    public void findDtoBySetter() {
+        List<MemberDto> result = queryFactory
+                .select(Projections.bean(MemberDto.class, //Projections.bean는 dto의 Setter를 통하여 데이터를 dto로 꽂힌다.
+                        member.username,
+                        member.age)) //MemberDTO <---- member.username, member.age 프로젝션
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    // 2. 필드 직접 접근
+    @Test
+    public void findDtoByField() {
+        List<MemberDto> result = queryFactory
+                .select(Projections.fields(MemberDto.class, //Projections.fields는 dto에 getter, setter 없어도 된다 바로 필드에다가 데이터를 꽂아버린다. (private인데 어째 바로 꽂히나요? 라이브러리가 다 하도록 지원해준다)
+                        member.username,
+                        member.age)) //MemberDTO <---- member.username, member.age 프로젝션
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    // 3. 생성자 사용
+    @Test
+    public void findDtoByConstructor() {
+        List<MemberDto> result = queryFactory
+                .select(Projections.constructor(MemberDto.class, //Projections.constructor는 dto에 생성자를 통하여 데이터를 꽂아버린다. dto 클래스 안에 정의된 생성자와 두번째, 세번째 파라미터와 순서가 맞아떨어져야한다. (순서와 타입만 맞으면됨)
+                        member.username,
+                        member.age))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+
+    //필드 직접 접근 & 필드명이 매칭되지 않는 DTO
+    @Test
+    public void findUserDtoByField() {
+        List<UserDto> result = queryFactory
+                .select(Projections.fields(UserDto.class,
+                        //member.username, //member 엔터티의 컬럼명과 UserDto의 필드명이 달라서 그냥 null로 입력된다.
+                        member.username.as("name"), //.as()를 추가하여 dto의 필드명과 맵핑하면 된다.
+                        member.age))
+                .from(member)
+                .fetch();
+
+        for (UserDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    @Test
+    public void findUserDtoByFieldWithSubQuery() {
+
+        QMember memberSub = new QMember("memberSub");
+
+        List<UserDto> result = queryFactory
+                .select(Projections.fields(UserDto.class,
+                        member.username.as("name"),
+
+                        //member.age
+                        ExpressionUtils.as(JPAExpressions
+                                .select(memberSub.age.max())
+                                .from(memberSub), "age") // dto의 ago 필드값을 서브쿼리를 사용하여 모두 40살로 출력한다.
+
+                ))
+                .from(member)
+                .fetch();
+
+        for (UserDto userDto : result) {
+            System.out.println("userDto = " + userDto);
+        }
+    }
+
+    // 3. 생성자 사용
+    @Test
+    public void findUserDtoByConstructor() {
+        List<UserDto> result = queryFactory
+                .select(Projections.constructor(UserDto.class, //Projections.constructor는 dto에 생성자를 통하여 데이터를 꽂아버린다. dto 클래스 안에 정의된 생성자와 두번째, 세번째 파라미터와 순서가 맞아떨어져야한다. (순서와 타입만 맞으면됨)
+                        member.username,
+                        member.age))
+                .from(member)
+                .fetch();
+
+        for (UserDto userDto : result) {
+            System.out.println("userDto = " + userDto);
+        }
+    }
+
 
 
 }
