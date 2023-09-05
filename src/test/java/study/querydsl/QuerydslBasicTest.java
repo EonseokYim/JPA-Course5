@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import study.querydsl.dto.MemberDto;
+import study.querydsl.dto.QMemberDto;
 import study.querydsl.dto.UserDto;
 import study.querydsl.entity.Member;
 import study.querydsl.entity.QMember;
@@ -756,6 +757,32 @@ public class QuerydslBasicTest {
         }
     }
 
+
+    /**
+     * 생성자를 활용하는 방식에서는 추가로 @QueryProjection 기능으로 구현할 수 있다.
+     * @QueryProjection (MemberDTO 생성자에 @QueryProjection 어노테이션을 추가하면 QMemberDTO Q파일을 gradle이 빌드하여 사용할 수 있다.)
+     */
+    @Test
+    public void findDtoByQueryProjection() {
+        List<MemberDto> result = queryFactory
+                .select(new QMemberDto(member.username, member.age))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+    // 질문: @QueryProjection이랑 그냥 Projections.constructor를 사용하는 거랑 차이가 뭐냐?? 그냥 Projections.constructor써도 되지 않냐??
+    // 답: Projections.constructor는 런타임에서 에러가 난다. 하지만 똑같은 오류를 @QueryProjection로 코딩하면 컴파일 오류가 난다. 즉, 굉장히 잘 설계가 되었다는 것이다. 오류날 확률이 줄어드는 거다. 런타임 오류는 무조건 피해야한다. 배포 후에 에러나는 실행 후에 에러가 확인된다는 것이니까!
+
+    /**
+     *     @QueryProjection이 장점이 많지만... DTO가 QueryDSL에 의존하게되는 단점이 있다.
+     *     아키텍처 적으로 좀 문제가 있는데.. 이 DTO가 QueryDSL에 종속되어버린다는 것이다. 아키텍쳐의 설계에 따라 다르겠지만... dto는 controller, service, repository 여러 곳에서 함께 쓰이는데.. querydsl에 종속된다는 것이 dto가 순수하지가 않다.
+     *
+     *     1. 만약에 우리 아키가 어차피 우리는 QueryDSL에 어플리케이션이 많이 의존하고있는데, DTO도 의존되어도 괜찮다. 이거는 OK하면 DTO에 @QueryProjection를 쓰는거고..
+     *     2. 아냐.. 그래도 혹시나 QueryDSL이 나중에 어쨰 바껴질지도 모르고... 나중에 미래를 위해서 우리는 DTO에 QueryDSL이 의존하는게 좀 찝찝하다하면 @QueryProjection를 사용하지말고 Projections.constructor, Projections.fields, Projections.bean등을 사용하자.
+     */
 
 
 }
