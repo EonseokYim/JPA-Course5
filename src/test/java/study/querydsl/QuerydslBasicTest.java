@@ -71,6 +71,11 @@ public class QuerydslBasicTest {
         em.clear();
     }
 
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) 시작 - JPQL vs QueryDSL
+     */
 
     //member1 조회 - JPQL
     @Test
@@ -96,6 +101,12 @@ public class QuerydslBasicTest {
         assertThat(findMember.getUsername()).isEqualTo("member1");
     }
 
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) 기본 Q-Type 활용
+     */
+
     //member1 조회 - QueryDSL (코드 간결화 후)
     @Test
     public void startQuerydsl2() {
@@ -111,6 +122,12 @@ public class QuerydslBasicTest {
 
         assertThat(findMember.getUsername()).isEqualTo("member1");
     }
+
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) 검색 조건 쿼리
+     */
 
     @Test
     public void search() {
@@ -136,6 +153,12 @@ public class QuerydslBasicTest {
         assertThat(findMember.getUsername()).isEqualTo("member1");
     }
 
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) 결과 조회
+     */
+
     @Test
     public void resultFetch() {
         List<Member> fetch = queryFactory
@@ -158,6 +181,12 @@ public class QuerydslBasicTest {
         List<Member> content = fetchResults.getResults();
     }
 
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) 정렬
+     */
+
     @Test
     public void sort() {
         em.persist(new Member(null, 100));
@@ -179,6 +208,12 @@ public class QuerydslBasicTest {
         assertThat(memberNull.getUsername()).isNull();
 
     }
+
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) 페이징
+     */
 
     @Test
     public void paging1() {
@@ -208,6 +243,12 @@ public class QuerydslBasicTest {
         assertThat(result.getOffset()).isEqualTo(0);
         assertThat(result.getResults().size()).isEqualTo(2);
     }
+
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) 집합
+     */
 
     @Test
     public void aggregation() {
@@ -254,6 +295,12 @@ public class QuerydslBasicTest {
         assertThat(teamB.get(member.age.avg())).isEqualTo(35); // (30+40)/2
     }
 
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) 기본 조인
+     */
+
     /**
      * 팀 A에 소속된 모든 회원
      */
@@ -295,6 +342,12 @@ public class QuerydslBasicTest {
                 .extracting("username")
                 .containsExactly("teamA", "teamB");
     }
+
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) 조인 - On절
+     */
 
     /**
      * 회원과 팀을 조인하면서, 팀 이름이 teamA인 팀만 조인, 회원은 모두 조회
@@ -338,6 +391,12 @@ public class QuerydslBasicTest {
         }
     }
 
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) 페치 조인
+     */
+
     @PersistenceUnit
     EntityManagerFactory emf;
 
@@ -369,6 +428,12 @@ public class QuerydslBasicTest {
         boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());//로딩이된 entity 인지 아닌지 확인해준다.
         assertThat(loaded).as("페치 조인 적용").isTrue();
     }
+
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) 서브 쿼리
+     */
 
     /**
      * where절에 서브쿼리 사용
@@ -492,6 +557,12 @@ public class QuerydslBasicTest {
      * 3. nativeSQL을 사용한다. (성능에 막대한 영향이 있어!! 죽어도 FROM절에 서브쿼리를 써야해!!)
      */
 
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) Case문
+     */
+
     @Test
     public void basicCase() {
         List<String> result = queryFactory.select(member.age
@@ -545,6 +616,12 @@ public class QuerydslBasicTest {
     //Querydsl은 자바 코드로 작성하기 때문에 rankPath처럼 복잡한 조건을 변수로 선언해서 select절, orderBy절에서 함께 사용할 수 있다.
 
 
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션3 기본문법) 상수, 문자 더하기
+     */
+
     /**
     상수 넣기
      */
@@ -587,6 +664,12 @@ public class QuerydslBasicTest {
      * 중급문법
      */
 
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션4 중급문법) 프로젝션과 결과 반환 - 기본
+     */
+
     /**
      * 프로젝션 타입이 하나일 경우
      * 프로젝션이란? -> 원하는 데이터를 딱 SELECT 찍어서 가져오는 것
@@ -621,6 +704,12 @@ public class QuerydslBasicTest {
     /**
      * Tuple은 QueryDSL 라이브러리 안에 속해있는 타입이다. 웬만하면 이러한 튜플타입은 repository 레이어에서만 쓰고, 서비스나 컨트롤러 영역에서 데이터가 필요하다면 dto로 반환해서 사용하길 권장한다.
      * 그래야 나중에 QueryDSL이 아닌 새로운 기술이 나오더라도 controller, service 계층은 그대로 두고 repository만 수정하면 된다. 스프링이  보통 이런식으로 설계하라고 유도함.
+     */
+
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션4 중급문법) 프로젝션과 결과 반환 - DTO 조회
      */
 
     /**
@@ -757,6 +846,12 @@ public class QuerydslBasicTest {
         }
     }
 
+
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션4 중급문법) 프로젝션과 결과 반환 - @QueryProjection
+     */
 
     /**
      * 생성자를 활용하는 방식에서는 추가로 @QueryProjection 기능으로 구현할 수 있다.
