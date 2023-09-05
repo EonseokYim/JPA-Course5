@@ -1,5 +1,6 @@
 package study.querydsl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
@@ -878,6 +879,46 @@ public class QuerydslBasicTest {
      *     1. 만약에 우리 아키가 어차피 우리는 QueryDSL에 어플리케이션이 많이 의존하고있는데, DTO도 의존되어도 괜찮다. 이거는 OK하면 DTO에 @QueryProjection를 쓰는거고..
      *     2. 아냐.. 그래도 혹시나 QueryDSL이 나중에 어쨰 바껴질지도 모르고... 나중에 미래를 위해서 우리는 DTO에 QueryDSL이 의존하는게 좀 찝찝하다하면 @QueryProjection를 사용하지말고 Projections.constructor, Projections.fields, Projections.bean등을 사용하자.
      */
+
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션4 중급문법) 동적쿼리 - BooleanBuilder 사용
+     */
+
+    /**
+     * 동적 쿼리를 해결하는 두가지 방식
+     *   1. BooleanBuilder
+     *   2. Where 다중 파라미터 사용
+     */
+
+    @Test
+    public void dynamicQuery_BooleanBuilder() {
+        String usernameParam = "member1";
+        Integer ageParam = 10;
+
+        List<Member> result = searchMember1(usernameParam, ageParam);
+
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember1(String usernameCond, Integer ageCond) {
+
+        BooleanBuilder builder = new BooleanBuilder();
+        //BooleanBuilder builder = new BooleanBuilder(member.username.eq(usernameCond)); //usernameCond값이 무조건이 있다고.. 앞에 null이 넘어오지 못하게 방어코드가 있다고 치면 처음부터 이렇게 파라미터로 셋팅하면 된다.
+        if (usernameCond != null) {
+            builder.and(member.username.eq(usernameCond));
+            //builder.or //조건에 맞게 or로도 처리할 수 있음.
+        }
+        if (ageCond != null) {
+            builder.and(member.age.eq(ageCond));
+        }
+
+        return queryFactory
+                .selectFrom(member)
+                .where(builder)
+                .fetch();
+    }
 
 
 }
