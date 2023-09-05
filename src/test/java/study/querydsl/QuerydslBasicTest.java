@@ -577,4 +577,46 @@ public class QuerydslBasicTest {
          문자로 변환할 수 있다. 이 방법은 ENUM을 처리할 때도 자주 사용한다.
      */
 
+
+    /**
+     * 중급문법
+     */
+
+    /**
+     * 프로젝션 타입이 하나일 경우
+     * 프로젝션이란? -> 원하는 데이터를 딱 SELECT 찍어서 가져오는 것
+     */
+    @Test
+    public void simpleProjection() {
+        List<String> result = queryFactory //프로젝션 타입이 하나이면 굉장히 심플하게 꺼내서 사용할 수 있다.
+                .select(member.username)
+                .from(member)
+                .fetch();
+
+        System.out.println("result = " + result);
+    }
+
+    /**
+     * 프로젝션 타입이 여러개일 경우
+     */
+    @Test
+    public void tupleProjection() {
+        List<Tuple> result = queryFactory
+                .select(member.username, member.age)
+                .from(member)
+                .fetch();
+
+        for (Tuple tuple : result) {
+            String username = tuple.get(member.username);
+            Integer age = tuple.get(member.age);
+            System.out.println("username = " + username);
+            System.out.println("age = " + age);
+        }
+    }
+    /**
+     * Tuple은 QueryDSL 라이브러리 안에 속해있는 타입이다. 웬만하면 이러한 튜플타입은 repository 레이어에서만 쓰고, 서비스나 컨트롤러 영역에서 데이터가 필요하다면 dto로 반환해서 사용하길 권장한다.
+     * 그래야 나중에 QueryDSL이 아닌 새로운 기술이 나오더라도 controller, service 계층은 그대로 두고 repository만 수정하면 된다. 스프링이  보통 이런식으로 설계하라고 유도함.
+     */
+
+
 }
