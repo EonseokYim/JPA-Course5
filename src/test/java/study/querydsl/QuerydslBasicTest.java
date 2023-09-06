@@ -1043,6 +1043,42 @@ public class QuerydslBasicTest {
         }
     }
 
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션4 중급문법) SQL function 호출하기
+     */
+
+    //데이터베이스에서 지원하는 SQL 함수 Replace를 사용하여 username에 "member"를 모두 "M"으로 치환 (각각 데이터베이스에 맞는 hibernate dialet가 구현되어있음 [org.hibernate.dialect])
+    @Test
+    public void sqlFunction() {
+        List<String> result = queryFactory
+                .select(Expressions.stringTemplate(
+                        "function('replace', {0}, {1}, {2})",
+                        member.username, "member", "M"))
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    @Test
+    public void sqlFunction2() {
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+//                .where(member.username.eq(
+//                        Expressions.stringTemplate("function('lower', {0})", member.username)))
+                .where(member.username.eq(member.username.lower())) //일반적인 DB에서 제공하는 ANSI 표준은 거의 대부분 메소드로 지원한다. Expressions.stringTemplate를 사용하지 않아도 된다.
+
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
 
 
 
