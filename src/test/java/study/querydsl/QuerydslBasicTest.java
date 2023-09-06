@@ -969,7 +969,6 @@ public class QuerydslBasicTest {
     }
     //이러한 조합은 비지니스 특성에 맞게 메소드명을 잘 정의하여 상태를 나타낼 수 있고, 재사용성이 높다. 일반 SQL에서는 where절을 재사용할 수 있는가? 없다.
 
-
     /**
      * Where 다중 파라미터 장점
      *   - where 조건에 null 값은 무시된다.
@@ -977,6 +976,72 @@ public class QuerydslBasicTest {
      *   - 쿼리 자체의 가독성이 높아진다.
      */
 
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션4 중급문법) 수정, 삭제 벌크 연산
+     */
+
+    //벌크 연산: 수정 한번으로 대량의 데이터를 수정할 때 사용하는 연산
+
+    //벌크 업데이트 나이가 28 less than이면 username을 모두 "비회원"으로 업데이트
+    @Test
+    public void bulkUpdate() {
+        long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28)) //less than
+                .execute();
+        //벌크 연산은 영속성 컨텍스트를 무시하고 DB 바로 쿼리가 나간다!!!!!!!!!!!
+        //즉, 벌크연산을 진행하면 DB의 상태와 영속성 컨텍스트의 상태가 달라진다.
+        // 데이터의 정합성이 맞지 않기 때문에 flush, clear를 해줘야한다.
+
+        // --> 근데 최신 하이버네이트에서는 벌크 업데이트 후에 DB의 상태를 영속성 컨텍스트와 동일하게 보장해주는 것 같다.!!!!!
+        //em.flush(); //하이버네이트 최신버전에서는 할 필요가 없다.
+        //em.clear();
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        for (Member member : result) {
+            System.out.println("member = " + member);
+        }
+    }
+
+    //모든 회원의 나이를 +1
+    @Test
+    public void bulkAdd() {
+        long count = queryFactory
+                .update(member)
+                .set(member.age, member.age.add(1))
+                .execute();
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        for (Member member : result) {
+            System.out.println("member = " + member);
+        }
+    }
+
+    //정책상 18살 이상의 모든 회원을 지우는게 있다면..
+    @Test
+    public void bulkDelete() {
+        long count = queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        for (Member member : result) {
+            System.out.println("member = " + member);
+        }
+    }
 
 
 
