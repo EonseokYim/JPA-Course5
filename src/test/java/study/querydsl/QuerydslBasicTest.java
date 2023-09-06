@@ -4,7 +4,9 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -753,7 +755,7 @@ public class QuerydslBasicTest {
         List<MemberDto> result = queryFactory
                 .select(Projections.bean(MemberDto.class, //Projections.bean는 dto의 Setter를 통하여 데이터를 dto로 꽂힌다.
                         member.username,
-                        member.age)) //MemberDTO <---- member.username, member.age 프로젝션
+                        member.age))
                 .from(member)
                 .fetch();
 
@@ -766,7 +768,7 @@ public class QuerydslBasicTest {
     @Test
     public void findDtoByField() {
         List<MemberDto> result = queryFactory
-                .select(Projections.fields(MemberDto.class, //Projections.fields는 dto에 getter, setter 없어도 된다 바로 필드에다가 데이터를 꽂아버린다. (private인데 어째 바로 꽂히나요? 라이브러리가 다 하도록 지원해준다)
+                .select(Projections.fields(MemberDto.class, //Projections.fields는 dto에 getter, setter 없어도 된다 바로 필드에다가 데이터를 꽂아버린다. 필드명과 엔터티명이 일치해야한다. (private인데 어째 바로 꽂히나요? 라이브러리가 다 하도록 지원해준다)
                         member.username,
                         member.age)) //MemberDTO <---- member.username, member.age 프로젝션
                 .from(member)
@@ -796,10 +798,10 @@ public class QuerydslBasicTest {
     //필드 직접 접근 & 필드명이 매칭되지 않는 DTO
     @Test
     public void findUserDtoByField() {
-        List<UserDto> result = queryFactory
+        List<UserDto> result = queryFactory //MemberDto가 아닌 커스텀 UserDto를 사용하여 프로젝션
                 .select(Projections.fields(UserDto.class,
-                        //member.username, //member 엔터티의 컬럼명과 UserDto의 필드명이 달라서 그냥 null로 입력된다.
-                        member.username.as("name"), //.as()를 추가하여 dto의 필드명과 맵핑하면 된다.
+                        //member.username, //member 엔터티의 컬럼명과 UserDto의 필드명이 달라서 null로 값이 입력된다. (오류는 나지 않는다)
+                        member.username.as("name"), //.as를 사용하여 dto에서 사용하는 필드명을 입력하면 맵핑할 수 있다.
                         member.age))
                 .from(member)
                 .fetch();
@@ -809,6 +811,8 @@ public class QuerydslBasicTest {
         }
     }
 
+
+    //서브쿼리를 이용한 프로젝션
     @Test
     public void findUserDtoByFieldWithSubQuery() {
 
@@ -821,7 +825,7 @@ public class QuerydslBasicTest {
                         //member.age
                         ExpressionUtils.as(JPAExpressions
                                 .select(memberSub.age.max())
-                                .from(memberSub), "age") // dto의 ago 필드값을 서브쿼리를 사용하여 모두 40살로 출력한다.
+                                .from(memberSub), "age") //이런 요구사항은 없겠지만 있다고 가정하고.. dto의 ago 필드값을 서브쿼리를 사용하여 모두 40살로 출력한다.
 
                 ))
                 .from(member)
@@ -832,11 +836,11 @@ public class QuerydslBasicTest {
         }
     }
 
-    // 3. 생성자 사용
+    //커스텀 DTO를 사용한 생성자 프로젝션
     @Test
     public void findUserDtoByConstructor() {
         List<UserDto> result = queryFactory
-                .select(Projections.constructor(UserDto.class, //Projections.constructor는 dto에 생성자를 통하여 데이터를 꽂아버린다. dto 클래스 안에 정의된 생성자와 두번째, 세번째 파라미터와 순서가 맞아떨어져야한다. (순서와 타입만 맞으면됨)
+                .select(Projections.constructor(UserDto.class, // 생성자 프로젝션은 순서와 타입만 맞으면 맵핑되기 때문에 dto의 필드명이 달라도 username 값이 꽂힌다.
                         member.username,
                         member.age))
                 .from(member)
@@ -919,6 +923,62 @@ public class QuerydslBasicTest {
                 .where(builder)
                 .fetch();
     }
+
+    /*
+    TODO
+     ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
+     섹션4 중급문법) 동적쿼리 - Where 다중 파라미터 사용
+     */
+
+    /*
+    개발자들이 대부분 BooleanBuilder를 많이 사용하고 Where 다중 파라미터 방법을 잘모르는데.. Where 다중 파라미터 방법을 사용하면 더욱 더 깔끔하게 처리할 수 있다.
+     */
+
+    @Test
+    public void dynamicQuery_WhereParam() {
+        String usernameParam = "member1";
+        Integer ageParam = null;
+
+        List<Member> result = searchMember2(usernameParam, ageParam);
+
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember2(String usernameCond, Integer ageCond) {
+        //쿼리가 매우 깔끔하게 작성된다.
+        return queryFactory
+                .selectFrom(member)
+                .where(null, usernameEq(usernameCond), ageEq(ageCond)) //파라미터 인자가 null이면 그냥 무시가 된다.
+                .fetch();
+
+    }
+
+    //아래 이거 코드 유지보수하고 가독성이 안좋지 않나요?? --> 개발하면 위에 queryFactory 코드만 참고하지 밑에 BooleanExpression 조건 코드는 안본다.
+    private BooleanExpression usernameEq(String usernameCond) {
+        return usernameCond != null ? member.username.eq(usernameCond) : null;
+    }
+
+    private BooleanExpression ageEq(Integer ageCond) {
+        return ageCond != null ? member.age.eq(ageCond) : null;
+    }
+
+    //또 Where 다중 파라미터의 엄청난 장점이 있다.
+    //usernameEq(), ageEq()가 메서드로 빠졌기 때문에 아래와 같이 조합하여 사용할 수 있다.
+    private BooleanExpression allEq(String usernameCond,Integer ageCond) {
+        return usernameEq(usernameCond).and(ageEq(ageCond));
+    }
+    //이러한 조합은 비지니스 특성에 맞게 메소드명을 잘 정의하여 상태를 나타낼 수 있고, 재사용성이 높다. 일반 SQL에서는 where절을 재사용할 수 있는가? 없다.
+
+
+    /**
+     * Where 다중 파라미터 장점
+     *   - where 조건에 null 값은 무시된다.
+     *   - 메서드를 다른 쿼리에서도 재활용 할 수 있다.
+     *   - 쿼리 자체의 가독성이 높아진다.
+     */
+
+
+
 
 
 }
