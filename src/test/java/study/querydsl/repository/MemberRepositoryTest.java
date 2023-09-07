@@ -89,4 +89,17 @@ class MemberRepositoryTest {
         assertThat(result.getSize()).isEqualTo(3);
         assertThat(result.getContent()).extracting("username").containsExactly("member1", "member2", "member3");
     }
+
+    @Test
+    public void searchPageComplexTest() {
+        dataSets();
+
+        MemberSearchCondition condition = new MemberSearchCondition();
+        PageRequest pageRequest = PageRequest.of(0, 3);
+
+        Page<MemberTeamDto> result = memberRepository.searchPageComplex(condition, pageRequest);
+
+        assertThat(result.getSize()).isEqualTo(3);
+        assertThat(result.getContent()).extracting("username").containsExactly("member1", "member2", "member3");
+    }
 }

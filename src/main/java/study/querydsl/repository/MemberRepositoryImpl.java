@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.util.StringUtils;
 import study.querydsl.dto.MemberSearchCondition;
 import study.querydsl.dto.MemberTeamDto;
@@ -131,8 +132,6 @@ public class MemberRepositoryImpl implements  MemberRepositoryCustom {
                 )
                 .fetchFirst();
 
-        List<MemberTeamDto> content = results.getResults();
-
-        return new PageImpl<>(content, pageable, total);
+        return new PageImpl<>(results, pageable, total);
     }
 }
