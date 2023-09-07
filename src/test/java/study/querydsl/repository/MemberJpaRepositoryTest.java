@@ -56,6 +56,42 @@ class MemberJpaRepositoryTest {
 
     @Test
     public void searchTest() {
+        dataSets();
+
+        MemberSearchCondition condition = new MemberSearchCondition();
+        condition.setAgeGoe(35);
+        condition.setAgeLoe(40);
+        condition.setTeamName("teamB");
+        /*
+         실무에서 많이 하는 실수!!
+         만약에 위의 3개의 조건이 다 빠지면 쿼리는 어떻게 출력할까??
+         조건이 없기 때문에 쿼리가 실행되지 않을까?? 아니다. where문이 없이 쿼리가 실행된다.
+
+         데이터가 많다면 조심해야한다.
+         조건이 무조건 있도록 코딩하던가, 아니면 paging 쿼리(limit 조건)을 추가하는 것이 좋은 설계이다.
+         */
+
+        List<MemberTeamDto> result = memberJpaRepository.searchByBuilder(condition);
+
+        assertThat(result).extracting("username").containsExactly("member4");
+    }
+
+    @Test
+    public void searchTest2() {
+        dataSets();
+
+        MemberSearchCondition condition = new MemberSearchCondition();
+        condition.setAgeGoe(35);
+        condition.setAgeLoe(40);
+        condition.setTeamName("teamB");
+
+        List<MemberTeamDto> result = memberJpaRepository.search(condition);
+
+        assertThat(result).extracting("username").containsExactly("member4");
+    }
+
+
+    private void dataSets() {
         Team teamA = new Team("teamA");
         Team teamB = new Team("teamB");
 
@@ -74,24 +110,5 @@ class MemberJpaRepositoryTest {
 
         em.flush();
         em.clear();
-
-        MemberSearchCondition condition = new MemberSearchCondition();
-        condition.setAgeGoe(35);
-        condition.setAgeLoe(40);
-        condition.setTeamName("teamB");
-        /*
-         실무에서 많이 하는 실수!!
-         만약에 위의 3개의 조건이 다 빠지면 쿼리는 어떻게 출력할까??
-         조건이 없기 때문에 쿼리가 실행되지 않을까?? 아니다. where문이 없이 쿼리가 실행된다.
-
-         데이터가 많다면 조심해야한다.
-         조건이 무조건 있도록 코딩하던가, 아니면 paging 쿼리(limit 조건)을 추가하는 것이 좋은 설계이다.
-         */
-
-        List<MemberTeamDto> result = memberJpaRepository.searchByBuilder(condition);
-
-        assertThat(result).extracting("username").containsExactly("member4");
-
-
     }
 }
