@@ -15,7 +15,6 @@ import study.querydsl.entity.Team;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -110,7 +109,7 @@ class MemberRepositoryTest {
         MemberSearchCondition condition = new MemberSearchCondition();
         PageRequest pageRequest = PageRequest.of(0, 10); //페이지 시작이면서 컨텐츠 사이즈가 페이지 사이즈보다 작을 때
 
-        Page<MemberTeamDto> result = memberRepository.searchPageComplexWithPageableExecutionUtils(condition, pageRequest);
+        Page<MemberTeamDto> result = memberRepository.searchPageComplexWithUtils(condition, pageRequest);
 
         assertThat(result.getSize()).isEqualTo(10);
         assertThat(result.getContent()).extracting("username").containsExactly("member1", "member2", "member3", "member4");

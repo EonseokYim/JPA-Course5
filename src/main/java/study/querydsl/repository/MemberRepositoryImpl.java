@@ -150,7 +150,7 @@ public class MemberRepositoryImpl implements  MemberRepositoryCustom {
      */
 
     @Override
-    public Page<MemberTeamDto> searchPageComplexWithPageableExecutionUtils(MemberSearchCondition condition, Pageable pageable) {
+    public Page<MemberTeamDto> searchPageComplexWithUtils(MemberSearchCondition condition, Pageable pageable) {
         List<MemberTeamDto> contents = queryFactory // content 메소드는 동일하다.
                 .select(new QMemberTeamDto(
                         member.id.as("memberId"),
